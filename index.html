@@ -2,31 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="Joshua Dia's interactive 2026–2028 roadmap from IT infrastructure to Azure and cloud security.">
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#082bb7">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c0c0f" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Career Path">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
   <link rel="shortcut icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
   <link rel="manifest" href="site.webmanifest">
   <title>Joshua's Career Path — Infrastructure to Cloud Security</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap">
   <script>
     (function () {
+      var theme = "system";
       try {
-        var preferred = localStorage.getItem("jcr-theme") || "system";
-        document.documentElement.dataset.theme = preferred;
-      } catch (error) {
-        document.documentElement.dataset.theme = "system";
-      }
+        var stored = localStorage.getItem("jcr-theme");
+        if (stored === "light" || stored === "dark" || stored === "system") theme = stored;
+      } catch (error) { /* private mode or blocked storage */ }
+      document.documentElement.dataset.theme = theme;
     }());
   </script>
+  <noscript>
+    <style>.reveal { opacity: 1 !important; transform: none !important; }</style>
+  </noscript>
   <style>
-    @import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap");
-
     :root {
       --bg: #ffffff;
       --ink: #0a0a0a;
@@ -44,6 +50,11 @@
       --ease: cubic-bezier(.16, 1, .3, 1);
       --sidebar: 14.5rem;
       --content: 61rem;
+      --safe-t: env(safe-area-inset-top, 0px);
+      --safe-r: env(safe-area-inset-right, 0px);
+      --safe-b: env(safe-area-inset-bottom, 0px);
+      --safe-l: env(safe-area-inset-left, 0px);
+      --bar-h: 0px;
       color-scheme: light;
     }
 
@@ -84,7 +95,11 @@
     }
 
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
     body {
       min-width: 320px;
       margin: 0;
@@ -96,7 +111,16 @@
       line-height: 1.58;
       transition: color .5s ease, background-color .5s ease;
     }
-    body.no-scroll { overflow: hidden; }
+    /* iOS Safari ignores `overflow:hidden` on body, so the lock is positional.
+       JS stores/restores scrollTop around it. */
+    body.no-scroll {
+      position: fixed;
+      left: 0;
+      right: 0;
+      width: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
     button, input, select, textarea { font: inherit; }
     button, a { -webkit-tap-highlight-color: transparent; }
     a { color: inherit; }
@@ -105,6 +129,12 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { border-radius: 99px; background: var(--g300); }
     :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+    /* Inverted surfaces need the opposite outline or it vanishes into the fill. */
+    .next-card :focus-visible,
+    .catalog-card.is-featured :focus-visible,
+    .primary-button:focus-visible,
+    .chip-button.active:focus-visible,
+    .tag.invert :focus-visible { outline-color: var(--bg); }
     [hidden] { display: none !important; }
 
     .skip-link {
@@ -142,10 +172,12 @@
       z-index: 50;
       inset: 0 auto 0 0;
       display: flex;
-      width: var(--sidebar);
+      width: calc(var(--sidebar) + var(--safe-l));
       flex-direction: column;
-      padding: 1.35rem 1.1rem 1rem;
+      padding: calc(1.35rem + var(--safe-t)) 1.1rem calc(1rem + var(--safe-b));
+      padding-left: calc(1.1rem + var(--safe-l));
       border-right: 1px solid var(--g200);
+      background: var(--bg);
       background: color-mix(in srgb, var(--bg) 88%, transparent);
       backdrop-filter: blur(22px) saturate(130%);
       -webkit-backdrop-filter: blur(22px) saturate(130%);
@@ -170,7 +202,6 @@
       transition: transform .35s var(--ease);
     }
     .brand-mark img { display: block; width: 100%; height: 100%; object-fit: cover; }
-    .brand:hover .brand-mark { transform: rotate(-6deg) scale(1.04); }
     .brand-copy strong { display: block; font-size: .88rem; line-height: 1.15; }
     .brand-copy span, .micro {
       display: block;
@@ -274,9 +305,7 @@
       letter-spacing: .02em;
       transition: transform .25s var(--ease), border-color .2s ease, background-color .2s ease, color .2s ease;
     }
-    .icon-button:hover, .small-button:hover, .chip-button:hover { border-color: var(--g300); background: var(--g100); transform: translateY(-1px); }
     .primary-button { border-color: var(--ink); color: var(--bg); background: var(--ink); }
-    .primary-button:hover { transform: translateY(-1px); opacity: .84; }
     .small-button { min-height: 2.15rem; padding: .55rem .75rem; }
     .chip-button {
       min-height: 1.95rem;
@@ -291,14 +320,15 @@
     .chip-button.active, .chip-button[aria-pressed="true"] { border-color: var(--ink); color: var(--bg); background: var(--ink); }
 
     .mobile-bar, .mobile-drawer { display: none; }
-    main { margin-left: var(--sidebar); }
+    main { margin-left: calc(var(--sidebar) + var(--safe-l)); padding-right: var(--safe-r); }
     .content {
       width: min(var(--content), calc(100% - 3rem));
       margin: 0 auto;
       padding: 3.5rem 0 5rem;
     }
     .page-section {
-      scroll-margin-top: 1.5rem;
+      /* Must clear the sticky mobile bar; --bar-h is 0 on desktop. */
+      scroll-margin-top: calc(var(--bar-h) + 1.5rem);
       padding: 3.8rem 0;
       border-top: 1px solid var(--g200);
     }
@@ -314,7 +344,7 @@
       text-transform: lowercase;
     }
     .section-label::after { content: ""; width: 2.5rem; height: 1px; background: var(--g200); }
-    h1, h2, h3, p { text-wrap: pretty; }
+    h1, h2, h3, p { text-wrap: pretty; overflow-wrap: break-word; }
     h1 {
       max-width: 13ch;
       margin: 0;
@@ -352,7 +382,10 @@
 
     .hero {
       position: relative;
+      /* svh tracks the *small* viewport, so mobile URL bars can't push the hero
+         taller than the screen. vh stays as the fallback for old engines. */
       min-height: calc(100vh - 7rem);
+      min-height: calc(100svh - 7rem);
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -382,16 +415,21 @@
       gap: 1rem;
       margin-top: 2.4rem;
     }
+    /* No backdrop-filter here on purpose: ~25 of these are on the page and the
+       backdrop is a flat page background, so the blur costs a lot of scroll
+       performance on mobile GPUs while changing almost nothing visually. */
     .glass-card {
       border: 1px solid var(--g200);
       border-radius: 16px;
+      background: var(--bg);
       background: var(--surface);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(18px) saturate(120%);
-      -webkit-backdrop-filter: blur(18px) saturate(120%);
       transition: transform .42s var(--ease), box-shadow .35s var(--ease), border-color .5s ease, background-color .5s ease;
     }
-    .glass-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+    /* Hover lift only where a real pointer exists — on touch it sticks after a tap. */
+    @media (hover: hover) and (pointer: fine) {
+      .glass-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+    }
     .progress-card { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 1.2rem; padding: 1.25rem; }
     .ring {
       --p: 0;
@@ -475,7 +513,6 @@
       font-size: .78rem;
       transition: transform .2s var(--ease), border-color .2s ease, background-color .2s ease;
     }
-    .check-row:hover { border-color: var(--g300); transform: translateY(-1px); }
     input[type="checkbox"] {
       width: 1.05rem;
       height: 1.05rem;
@@ -499,7 +536,9 @@
     .scope-result p { max-width: 17rem; margin: .75rem auto 0; color: var(--g500); font-size: .76rem; }
 
     .timeline { position: relative; display: grid; gap: .75rem; }
-    .timeline::before { content: ""; position: absolute; top: 1.65rem; bottom: 1.65rem; left: 2.1rem; width: 1px; background: var(--g200); }
+    /* Line must sit on the dot centre: card padding 1.1rem + half of the
+       2.9rem column = 2.55rem. It was 2.1rem, so the rail ran off to the left. */
+    .timeline::before { content: ""; position: absolute; top: 1.65rem; bottom: 1.65rem; left: 2.55rem; width: 1px; background: var(--g200); }
     .time-card {
       position: relative;
       display: grid;
@@ -578,7 +617,6 @@
       background: var(--g50);
       transition: transform .42s var(--ease), border-color .2s ease, box-shadow .35s var(--ease);
     }
-    .credential:hover { border-color: var(--g300); box-shadow: var(--shadow); transform: translateY(-2px); }
     .credential:has(input:checked) { opacity: .66; }
     .credential:has(input:checked) h3 { text-decoration: line-through; }
     .credential input { margin-top: .13rem; }
@@ -635,7 +673,15 @@
     .lab h3 { margin-top: 2rem; font-size: 1.02rem; }
     .lab > p { margin-top: .5rem; color: var(--g500); font-size: .78rem; }
     .lab-output { margin-top: .85rem; padding-top: .75rem; border-top: 1px solid var(--g200); font-size: .72rem; }
-    .lab-check { display: flex; align-items: center; gap: .45rem; cursor: pointer; }
+    .lab-check {
+      display: flex;
+      min-height: 2.75rem;
+      align-items: center;
+      gap: .45rem;
+      margin: -.5rem -.4rem;
+      padding: .5rem .4rem;
+      cursor: pointer;
+    }
     .lab-check span { font: 500 .62rem/1.2 "Geist Mono", ui-monospace, monospace; text-transform: uppercase; }
 
     .catalog-controls {
@@ -719,11 +765,9 @@
       text-decoration: none;
       transition: transform .25s var(--ease), border-color .2s ease;
     }
-    .source-link:hover { border-color: var(--g300); transform: translateY(-1px); }
     .source-link strong { display: block; font-size: .76rem; }
     .source-link span { display: block; margin-top: .12rem; color: var(--g500); font: 500 .61rem/1.3 "Geist Mono", ui-monospace, monospace; }
     .source-link b { font: 500 .8rem/1 "Geist Mono", ui-monospace, monospace; transition: transform .2s ease; }
-    .source-link:hover b { transform: translate(.12rem, -.12rem); }
     .cert-index-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem; }
     .cert-track { padding: 1.05rem; }
     .cert-track-head { display: flex; align-items: start; justify-content: space-between; gap: .75rem; padding-bottom: .8rem; border-bottom: 1px solid var(--g200); }
@@ -743,7 +787,6 @@
     .cert-link strong { display: block; font-size: .76rem; }
     .cert-link span { display: block; margin-top: .12rem; color: var(--g500); font: 500 .6rem/1.35 "Geist Mono", ui-monospace, monospace; text-transform: uppercase; letter-spacing: .04em; }
     .cert-link b { color: var(--g500); font: 500 .78rem/1 "Geist Mono", ui-monospace, monospace; transition: transform .2s var(--ease), color .2s ease; }
-    .cert-link:hover b { color: var(--ink); transform: translate(.12rem, -.12rem); }
 
     .panel-backdrop {
       position: fixed;
@@ -766,8 +809,9 @@
       bottom: 0;
       width: min(38rem, calc(100% - 1rem));
       overflow-y: auto;
-      padding: 1.15rem;
+      padding: calc(1.15rem + var(--safe-t)) calc(1.15rem + var(--safe-r)) calc(1.15rem + var(--safe-b)) 1.15rem;
       border-left: 1px solid var(--g200);
+      background: var(--bg);
       background: var(--surface-strong);
       box-shadow: -40px 0 90px -45px rgba(0, 0, 0, .4);
       backdrop-filter: blur(28px) saturate(125%);
@@ -777,17 +821,22 @@
       transition: transform .5s var(--ease), visibility .5s ease, background-color .5s ease;
     }
     .vendor-panel.open { transform: translateX(0); visibility: visible; }
+    /* Stop the page behind from scrolling once the panel hits its end. */
+    .vendor-panel, .drawer-nav { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
     .panel-head {
       position: sticky;
       z-index: 2;
-      top: -1.15rem;
+      /* Negative offsets must mirror the panel's padding, which now carries
+         the safe-area insets, or the sticky head detaches on notched screens. */
+      top: calc(-1.15rem - var(--safe-t));
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 1rem;
       align-items: start;
-      margin: -1.15rem -1.15rem 1rem;
-      padding: 1.25rem 1.15rem 1rem;
+      margin: calc(-1.15rem - var(--safe-t)) calc(-1.15rem - var(--safe-r)) 1rem -1.15rem;
+      padding: calc(1.25rem + var(--safe-t)) calc(1.15rem + var(--safe-r)) 1rem 1.15rem;
       border-bottom: 1px solid var(--g200);
+      background: var(--bg);
       background: color-mix(in srgb, var(--bg) 88%, transparent);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -804,7 +853,24 @@
     .vendor-links { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: .7rem; padding-top: .65rem; border-top: 1px solid var(--g200); }
     .vendor-links a { font: 500 .65rem/1.3 "Geist Mono", ui-monospace, monospace; }
     .panel-note { margin: .9rem 0 .2rem; color: var(--g500); font-size: .7rem; }
-    footer { margin-left: var(--sidebar); padding: 1.2rem 1.5rem 2.5rem; color: var(--g500); text-align: center; font: 500 .65rem/1.5 "Geist Mono", ui-monospace, monospace; }
+    footer {
+      margin-left: calc(var(--sidebar) + var(--safe-l));
+      padding: 1.2rem calc(1.5rem + var(--safe-r)) calc(2.5rem + var(--safe-b)) 1.5rem;
+      color: var(--g500);
+      text-align: center;
+      font: 500 .65rem/1.5 "Geist Mono", ui-monospace, monospace;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .brand:hover .brand-mark { transform: rotate(-6deg) scale(1.04); }
+      .icon-button:hover, .small-button:hover, .chip-button:hover { border-color: var(--g300); background: var(--g100); transform: translateY(-1px); }
+      .primary-button:hover { transform: translateY(-1px); opacity: .84; }
+      .check-row:hover { border-color: var(--g300); transform: translateY(-1px); }
+      .credential:hover { border-color: var(--g300); box-shadow: var(--shadow); transform: translateY(-2px); }
+      .source-link:hover { border-color: var(--g300); transform: translateY(-1px); }
+      .source-link:hover b { transform: translate(.12rem, -.12rem); }
+      .cert-link:hover b { color: var(--ink); transform: translate(.12rem, -.12rem); }
+    }
 
     .reveal {
       opacity: 0;
@@ -825,33 +891,41 @@
     ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .5s; }
 
     @media (max-width: 1100px) {
+      :root { --bar-h: 3.7rem; }
       .sidebar { display: none; }
       .mobile-bar {
         position: sticky;
         z-index: 55;
         top: 0;
         display: flex;
-        min-height: 3.7rem;
+        min-height: calc(3.7rem + var(--safe-t));
         align-items: center;
         justify-content: space-between;
-        padding: .7rem 1rem;
+        gap: .5rem;
+        padding: calc(.7rem + var(--safe-t)) calc(1rem + var(--safe-r)) .7rem calc(1rem + var(--safe-l));
         border-bottom: 1px solid var(--g200);
+        background: var(--bg);
         background: color-mix(in srgb, var(--bg) 89%, transparent);
         backdrop-filter: blur(18px);
         -webkit-backdrop-filter: blur(18px);
       }
-      .mobile-bar .brand { padding: 0; }
+      .mobile-bar .brand { min-width: 0; padding: 0; }
+      .mobile-bar .brand-copy { min-width: 0; overflow: hidden; }
+      .mobile-bar .brand-copy strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .mobile-bar .brand-copy span { display: none; }
-      .mobile-actions { display: flex; gap: .45rem; }
-      .mobile-actions .icon-button { width: 2.4rem; padding: 0; }
+      .mobile-actions { display: flex; flex: 0 0 auto; gap: .45rem; }
+      .mobile-actions .icon-button { width: 2.75rem; min-height: 2.75rem; padding: 0; }
       .mobile-drawer {
         position: fixed;
         z-index: 100;
         inset: 0;
         display: grid;
-        grid-template-rows: auto 1fr auto;
-        padding: 1rem;
+        /* The nav row is the only one allowed to grow, and it scrolls: 12 items
+           are taller than a small phone, and body scroll is locked while open. */
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        padding: calc(1rem + var(--safe-t)) calc(1rem + var(--safe-r)) calc(1rem + var(--safe-b)) calc(1rem + var(--safe-l));
         color: var(--ink);
+        background: var(--bg);
         background: color-mix(in srgb, var(--bg) 94%, transparent);
         backdrop-filter: blur(28px) saturate(120%);
         -webkit-backdrop-filter: blur(28px) saturate(120%);
@@ -861,19 +935,57 @@
         transition: opacity .25s ease, visibility .25s ease, transform .35s var(--ease);
       }
       .mobile-drawer.open { opacity: 1; visibility: visible; transform: translateY(0); }
-      .drawer-head { display: flex; align-items: center; justify-content: space-between; }
-      .drawer-nav { display: grid; align-content: center; max-width: 30rem; width: 100%; margin: auto; }
+      .drawer-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+      .drawer-head .icon-button { width: 2.75rem; min-height: 2.75rem; padding: 0; flex: 0 0 auto; }
+      .drawer-nav {
+        display: grid;
+        align-content: center;
+        max-width: 30rem;
+        width: 100%;
+        min-height: 0;
+        /* `margin: auto` here opted the nav out of grid stretch, so it sized to
+           its content, overflowed the row and never scrolled — the last links
+           were unreachable on short phones. Centre horizontally only. */
+        margin: 0 auto;
+        overflow-y: auto;
+        padding: .5rem 0;
+      }
       .drawer-nav a, .drawer-nav button { min-height: 3.15rem; border-bottom: 1px solid var(--g200); border-radius: 0; font-size: 1rem; }
       .drawer-nav a::before, .drawer-nav button::before { content: attr(data-index); width: 2rem; color: var(--g400); font-size: .65rem; }
-      .drawer-foot { max-width: 30rem; width: 100%; margin: 0 auto; color: var(--g500); font: 500 .65rem/1.5 "Geist Mono", ui-monospace, monospace; }
+      .drawer-foot {
+        max-width: 30rem;
+        width: 100%;
+        margin: 0 auto;
+        padding-top: .8rem;
+        color: var(--g500);
+        font: 500 .65rem/1.5 "Geist Mono", ui-monospace, monospace;
+      }
       main, footer { margin-left: 0; }
+      main { padding-right: 0; }
+      footer { padding-left: calc(1.5rem + var(--safe-l)); }
       .content { padding-top: 2rem; }
-      .hero { min-height: calc(100vh - 5.7rem); }
+      .hero {
+        min-height: calc(100vh - 5.7rem);
+        min-height: calc(100svh - var(--bar-h) - var(--safe-t) - 2rem);
+      }
+      /* 16px is the threshold below which iOS Safari zooms the page on focus. */
+      input[type="search"], input[type="text"], input[type="date"],
+      input[type="number"], select, textarea { font-size: 16px; }
+      .chip-button { min-height: 2.5rem; padding: .55rem .85rem; }
+      .icon-button, .small-button, .primary-button { min-height: 2.75rem; }
+      .hero-actions a, .hero-actions button { min-height: 2.9rem; }
+      .brand { min-height: 2.75rem; }
+      .cert-link, .source-link { min-height: 3.4rem; }
+      .catalog-card a, .credential a, .vendor-links a {
+        display: inline-flex;
+        min-height: 2.5rem;
+        align-items: center;
+      }
     }
 
     @media (max-width: 760px) {
       .content { width: min(100% - 2rem, var(--content)); }
-      .page-section { padding: 3.2rem 0; scroll-margin-top: 4.3rem; }
+      .page-section { padding: 3.2rem 0; }
       .section-heading { grid-template-columns: 1fr; gap: .7rem; }
       .hero-dashboard, .scope-shell, .planner-grid { grid-template-columns: 1fr; }
       .scope-result { min-height: 11rem; border-top: 1px solid var(--g200); border-left: 0; }
@@ -899,20 +1011,31 @@
       .catalog-controls { grid-template-columns: 1fr; }
       .catalog-controls .field:first-child { grid-column: auto; }
       .time-card { grid-template-columns: 2.3rem 1fr; padding: .9rem .75rem; }
-      .timeline::before { left: 1.88rem; }
+      .timeline::before { left: 1.9rem; }
       .phase-head { grid-template-columns: 1fr; }
       .phase-head .tag { width: max-content; }
     }
 
     @media print {
-      :root { --bg: #fff; --ink: #000; --g50: #fff; --g100: #f7f7f7; --g200: #ddd; --g300: #bbb; --g400: #666; --g500: #444; --g600: #222; }
-      .sidebar, .mobile-bar, .mobile-drawer, .vendor-panel, .panel-backdrop, .halftone, .hero-actions, .toolbar, .catalog-controls, .planner-actions, .side-actions { display: none !important; }
-      main, footer { margin-left: 0; }
+      :root { --bg: #fff; --ink: #000; --g50: #fff; --g100: #f7f7f7; --g200: #ddd; --g300: #bbb; --g400: #666; --g500: #444; --g600: #222; --safe-t: 0px; --safe-r: 0px; --safe-b: 0px; --safe-l: 0px; }
+      .sidebar, .mobile-bar, .mobile-drawer, .vendor-panel, .panel-backdrop, .halftone, .hero-actions, .toolbar, .catalog-controls, .planner-actions, .side-actions, .skip-link { display: none !important; }
+      body.no-scroll { position: static !important; overflow: visible !important; }
+      main, footer { margin-left: 0; padding-right: 0; }
       .content { width: 100%; padding: 0; }
       .hero { min-height: auto; padding: 1rem 0 2rem; }
       .page-section { break-inside: avoid; padding: 1.5rem 0; }
       .glass-card, .catalog-card, .source-link { box-shadow: none !important; transform: none !important; backdrop-filter: none; }
+      /* Without this every scroll-reveal block prints at opacity 0 — i.e. a
+         blank document if you hit Print before scrolling the whole page. */
+      .reveal { opacity: 1 !important; transform: none !important; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+      /* Collapsed skill groups would otherwise print as bare headings. */
+      details > *:not(summary) { display: block !important; }
+      details summary::after { content: ""; }
+      [hidden] { display: none !important; }
       a { text-decoration: none; }
+      a[href^="http"]::after { content: " (" attr(href) ")"; font-size: .62rem; color: #555; word-break: break-all; }
+      .cert-link::after, .source-link::after, .brand::after { content: none !important; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -981,7 +1104,7 @@
     </div>
   </header>
 
-  <div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+  <div class="mobile-drawer" id="mobileDrawer" role="dialog" aria-modal="true" aria-label="Roadmap navigation" aria-hidden="true">
     <div class="drawer-head">
       <a class="brand" href="#overview"><span class="brand-mark"><img src="assets/icon-192.png" alt=""></span><span class="brand-copy"><strong>Career Path</strong><span>navigation</span></span></a>
       <button class="icon-button" id="closeMenu" type="button" aria-label="Close navigation">×</button>
@@ -1131,7 +1254,7 @@
             <div class="ring" id="progressRing"><strong id="ringPercent">0%</strong></div>
             <div>
               <span class="micro">skills + credentials + proof</span>
-              <h2 id="progressText">0 of 0 milestones complete</h2>
+              <h2 id="progressText" aria-live="polite">0 of 0 milestones complete</h2>
               <p>Check a milestone only when you can explain it or show evidence.</p>
               <div class="progress-track"><span id="mainProgressFill"></span></div>
             </div>
@@ -1235,7 +1358,7 @@
           <p>Free learning comes first. Paid exams come when they strengthen your current work or qualify you for the next role.</p>
         </div>
         <div class="toolbar reveal">
-          <div class="filter-row" aria-label="Filter roadmap stages">
+          <div class="filter-row" role="group" aria-label="Filter roadmap stages">
             <button class="chip-button active" type="button" data-stage-filter="all" aria-pressed="true">All</button>
             <button class="chip-button" type="button" data-stage-filter="now" aria-pressed="false">Now</button>
             <button class="chip-button" type="button" data-stage-filter="2027" aria-pressed="false">2027</button>
@@ -1318,7 +1441,7 @@
             <summary><span><strong>Security operations</strong><p>Threats, controls, visibility, response</p></span></summary>
             <div class="skill-list">
               <label class="skill-item"><input id="skill-frameworks" data-track type="checkbox" data-action="Explain how CIA, NIST CSF, CIS Controls, zero trust, and least privilege guide a real decision."><span><strong>Security principles</strong><span>CIA, AAA, risk, least privilege, defense in depth, zero trust, NIST CSF, CIS Controls.</span></span></label>
-              <label class="skill-item"><input id="skill-threats" data-track type="checkbox" data-action="Map a realistic attack to MITRE ATT&CK and identify preventive and detective controls."><span><strong>Threats + vulnerabilities</strong><span>MITRE ATT&CK, OWASP, CVEs, phishing, malware, misconfiguration, remediation priority.</span></span></label>
+              <label class="skill-item"><input id="skill-threats" data-track type="checkbox" data-action="Map a realistic attack to MITRE ATT&amp;CK and identify preventive and detective controls."><span><strong>Threats + vulnerabilities</strong><span>MITRE ATT&amp;CK, OWASP, CVEs, phishing, malware, misconfiguration, remediation priority.</span></span></label>
               <label class="skill-item"><input id="skill-siem" data-track type="checkbox" data-action="Investigate a SIEM alert and write the evidence, hypothesis, decision, and escalation path."><span><strong>Detection + SIEM</strong><span>Windows/Linux logs, network telemetry, queries, triage, false positives, MITRE mapping.</span></span></label>
               <label class="skill-item"><input id="skill-ir" data-track type="checkbox" data-action="Practice an incident lifecycle from preparation and detection through recovery and lessons learned."><span><strong>Incident response</strong><span>Prepare, detect, analyze, contain, eradicate, recover, communicate, learn.</span></span></label>
             </div>
@@ -1355,7 +1478,7 @@
           <article class="glass-card lab reveal"><div class="lab-top"><span class="card-meta">lab 02 · identity</span><label class="lab-check"><input id="lab-identity" data-track type="checkbox" data-action="Build and document the identity hardening lab."><span>done</span></label></div><h3>AD / Entra identity hardening</h3><p>Create users, groups, role separation, MFA/conditional-access design, and an access review.</p><div class="lab-output"><span class="proof-label">publish</span> Access model, risks, controls, screenshots with sensitive data removed.</div></article>
           <article class="glass-card lab reveal"><div class="lab-top"><span class="card-meta">lab 03 · automation</span><label class="lab-check"><input id="lab-powershell" data-track type="checkbox" data-action="Publish the PowerShell automation project with safe sample data."><span>done</span></label></div><h3>PowerShell operations helper</h3><p>Inventory services, summarize event logs, check backups, or report patch state using safe sample inputs.</p><div class="lab-output"><span class="proof-label">publish</span> Script, README, sample output, error handling, and rollback notes.</div></article>
           <article class="glass-card lab reveal"><div class="lab-top"><span class="card-meta">lab 04 · cloud</span><label class="lab-check"><input id="lab-azure" data-track type="checkbox" data-action="Build the secure Azure baseline and destroy paid resources after verification."><span>done</span></label></div><h3>Secure Azure baseline</h3><p>Use Entra, RBAC, Policy, VNet/NSG, Key Vault, Monitor, backup, and budgets in one small design.</p><div class="lab-output"><span class="proof-label">publish</span> Architecture, IaC, controls, cost estimate, validation, and teardown.</div></article>
-          <article class="glass-card lab reveal"><div class="lab-top"><span class="card-meta">lab 05 · blue team</span><label class="lab-check"><input id="lab-siem" data-track type="checkbox" data-action="Complete and publish a sanitized SIEM investigation report."><span>done</span></label></div><h3>SIEM investigation</h3><p>Investigate a suspicious login, PowerShell execution, phishing message, or malware alert.</p><div class="lab-output"><span class="proof-label">publish</span> Timeline, query, evidence, ATT&CK mapping, decision, and response.</div></article>
+          <article class="glass-card lab reveal"><div class="lab-top"><span class="card-meta">lab 05 · blue team</span><label class="lab-check"><input id="lab-siem" data-track type="checkbox" data-action="Complete and publish a sanitized SIEM investigation report."><span>done</span></label></div><h3>SIEM investigation</h3><p>Investigate a suspicious login, PowerShell execution, phishing message, or malware alert.</p><div class="lab-output"><span class="proof-label">publish</span> Timeline, query, evidence, ATT&amp;CK mapping, decision, and response.</div></article>
           <article class="glass-card lab reveal"><div class="lab-top"><span class="card-meta">lab 06 · emerging</span><label class="lab-check"><input id="lab-ai" data-track type="checkbox" data-action="Threat-model an AI-enabled workflow using OWASP, MITRE ATLAS, and NIST AI RMF."><span>done</span></label></div><h3>AI workflow threat model</h3><p>Model prompt injection, data exposure, excessive agency, tool abuse, identity, logging, and human approval.</p><div class="lab-output"><span class="proof-label">publish</span> Data-flow diagram, abuse cases, risk ranking, and mitigations.</div></article>
         </div>
       </section>
@@ -1579,7 +1702,7 @@
           <a class="source-link" href="https://learn.microsoft.com/en-us/credentials/certifications/cloud-and-ai-security-engineer-associate/" target="_blank" rel="noreferrer"><span><strong>Microsoft SC-500</strong><span>cloud and AI security engineer associate</span></span><b>↗</b></a>
           <a class="source-link" href="https://www.comptia.org/en-us/certifications/security/" target="_blank" rel="noreferrer"><span><strong>CompTIA Security+</strong><span>official certification overview</span></span><b>↗</b></a>
           <a class="source-link" href="https://www.comptia.org/en-us/certifications/network/" target="_blank" rel="noreferrer"><span><strong>CompTIA Network+</strong><span>official certification overview</span></span><b>↗</b></a>
-          <a class="source-link" href="https://attack.mitre.org/" target="_blank" rel="noreferrer"><span><strong>MITRE ATT&CK</strong><span>adversary tactics and techniques</span></span><b>↗</b></a>
+          <a class="source-link" href="https://attack.mitre.org/" target="_blank" rel="noreferrer"><span><strong>MITRE ATT&amp;CK</strong><span>adversary tactics and techniques</span></span><b>↗</b></a>
           <a class="source-link" href="https://www.nist.gov/cyberframework" target="_blank" rel="noreferrer"><span><strong>NIST Cybersecurity Framework</strong><span>govern, identify, protect, detect, respond, recover</span></span><b>↗</b></a>
           <a class="source-link" href="https://atlas.mitre.org/" target="_blank" rel="noreferrer"><span><strong>MITRE ATLAS</strong><span>adversarial threats to AI systems</span></span><b>↗</b></a>
           <a class="source-link" href="https://www.nist.gov/itl/ai-risk-management-framework" target="_blank" rel="noreferrer"><span><strong>NIST AI RMF</strong><span>AI risk and governance foundation</span></span><b>↗</b></a>
@@ -1594,279 +1717,93 @@
   <script>
     (function () {
       "use strict";
-      var STORAGE_KEY = "joshua-career-roadmap-v4";
-      var SCOPE_KEY = "joshua-career-scope-v2";
-      var PLAN_KEY = "joshua-career-plan-v3";
-      var state = { checks: {} };
-      try { state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{\"checks\":{}}"); } catch (error) { state = { checks: {} }; }
-      if (!state.checks) state.checks = {};
 
-      var tracked = Array.prototype.slice.call(document.querySelectorAll("[data-track]"));
-      var mainFill = document.getElementById("mainProgressFill");
-      var sideFill = document.getElementById("sideProgressFill");
-      var progressRing = document.getElementById("progressRing");
-      var ringPercent = document.getElementById("ringPercent");
-      var sidePercent = document.getElementById("sidePercent");
-      var progressText = document.getElementById("progressText");
-      var nextAction = document.getElementById("nextAction");
-
-      function saveChecks() {
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (error) {}
+      // A single failure used to kill the whole IIFE, which left every
+      // scroll-reveal block stuck at opacity 0 — i.e. a blank page. Reveals are
+      // now force-shown if anything below throws.
+      function revealEverything() {
+        var nodes = document.querySelectorAll(".reveal");
+        for (var i = 0; i < nodes.length; i += 1) nodes[i].classList.add("visible");
       }
-      function updateProgress() {
-        var done = tracked.filter(function (box) { return box.checked; }).length;
-        var total = tracked.length;
-        var percent = total ? Math.round(done / total * 100) : 0;
-        mainFill.style.width = percent + "%";
-        sideFill.style.width = percent + "%";
-        progressRing.style.setProperty("--p", percent);
-        ringPercent.textContent = percent + "%";
-        sidePercent.textContent = percent + "%";
-        progressText.textContent = done + " of " + total + " milestones complete";
-        var next = tracked.find(function (box) { return !box.checked; });
-        nextAction.textContent = next ? (next.dataset.action || "Complete the next unchecked milestone.") : "Roadmap complete. Review your target role and set a new evidence goal.";
+
+      try {
+        run();
+      } catch (error) {
+        revealEverything();
+        if (window.console && console.error) console.error("Career Path init failed:", error);
       }
-      tracked.forEach(function (box) {
-        box.checked = Boolean(state.checks[box.id]);
-        box.addEventListener("change", function () {
-          state.checks[box.id] = box.checked;
-          saveChecks();
-          updateProgress();
-        });
-      });
-      updateProgress();
 
-      document.getElementById("resetChecks").addEventListener("click", function () {
-        if (!window.confirm("Clear all checked roadmap, skill, lab, and weekly milestones?")) return;
-        tracked.forEach(function (box) { box.checked = false; });
-        state.checks = {};
-        saveChecks();
-        updateProgress();
-      });
+      function run() {
+        var STORAGE_KEY = "joshua-career-roadmap-v4";
+        var SCOPE_KEY = "joshua-career-scope-v2";
+        var PLAN_KEY = "joshua-career-plan-v3";
+        var THEME_KEY = "jcr-theme";
 
-      var scopeState = {};
-      try { scopeState = JSON.parse(localStorage.getItem(SCOPE_KEY) || "{}"); } catch (error) { scopeState = {}; }
-      var scopeChecks = Array.prototype.slice.call(document.querySelectorAll(".scope-check"));
-      var scopeScore = document.getElementById("scopeScore");
-      var scopeMessage = document.getElementById("scopeMessage");
-      function updateScope() {
-        var count = scopeChecks.filter(function (box) { return box.checked; }).length;
-        scopeScore.textContent = count + "/8";
-        scopeMessage.textContent = count >= 6
-          ? "Excellent bridge. Prioritize measurable ownership and ask for Azure, identity, hardening, or automation work."
-          : count >= 4
-            ? "Credible bridge. Strengthen missing exposure—especially cloud, identity, logging, and automation."
-            : "The title alone is not enough. Clarify the real responsibilities and growth path before relying on the role.";
-      }
-      scopeChecks.forEach(function (box) {
-        box.checked = Boolean(scopeState[box.value]);
-        box.addEventListener("change", function () {
-          scopeState[box.value] = box.checked;
-          try { localStorage.setItem(SCOPE_KEY, JSON.stringify(scopeState)); } catch (error) {}
-          updateScope();
-        });
-      });
-      updateScope();
+        // ---------------------------------------------------------------- storage
 
-      var stageButtons = Array.prototype.slice.call(document.querySelectorAll("[data-stage-filter]"));
-      var phases = Array.prototype.slice.call(document.querySelectorAll(".roadmap-phase"));
-      stageButtons.forEach(function (button) {
-        button.addEventListener("click", function () {
-          var filter = button.dataset.stageFilter;
-          stageButtons.forEach(function (item) {
-            var active = item === button;
-            item.classList.toggle("active", active);
-            item.setAttribute("aria-pressed", String(active));
+        // JSON.parse("null") returns null, and a corrupted value returns a
+        // string or number. Any of those used to throw on first property access.
+        function readObject(key) {
+          try {
+            var parsed = JSON.parse(localStorage.getItem(key) || "{}");
+            return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+          } catch (error) {
+            return {};
+          }
+        }
+        function writeObject(key, value) {
+          try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (error) { return false; }
+        }
+
+        var state = readObject(STORAGE_KEY);
+        if (!state.checks || typeof state.checks !== "object") state.checks = {};
+        var scopeState = readObject(SCOPE_KEY);
+        var savedPlan = readObject(PLAN_KEY);
+
+        // ------------------------------------------------------------ scroll lock
+
+        // iOS Safari ignores `overflow: hidden` on <body>, so the page keeps
+        // scrolling behind an open overlay. Locking positionally is the only
+        // reliable cross-browser fix; the scroll offset is restored on unlock.
+        // Overlays are reference-counted so closing one never unlocks another.
+        var lockOwners = {};
+        var lockCount = 0;
+        var lockedScrollY = 0;
+        var root = document.documentElement;
+
+        function setScrollLock(owner, on) {
+          if (on === Boolean(lockOwners[owner])) return;
+          if (on) { lockOwners[owner] = true; lockCount += 1; }
+          else { delete lockOwners[owner]; lockCount -= 1; }
+
+          if (lockCount === 1 && on) {
+            lockedScrollY = window.pageYOffset || root.scrollTop || 0;
+            document.body.style.top = -lockedScrollY + "px";
+            document.body.classList.add("no-scroll");
+          } else if (lockCount === 0) {
+            document.body.classList.remove("no-scroll");
+            document.body.style.top = "";
+            var previous = root.style.scrollBehavior;
+            root.style.scrollBehavior = "auto"; // never animate the restore
+            window.scrollTo(0, lockedScrollY);
+            root.style.scrollBehavior = previous;
+          }
+        }
+
+        // ------------------------------------------------------------ focus trap
+
+        var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+        function focusableIn(container) {
+          return Array.prototype.slice.call(container.querySelectorAll(FOCUSABLE)).filter(function (element) {
+            return !element.hasAttribute("hidden") && element.offsetParent !== null && !element.closest("[hidden]");
           });
-          phases.forEach(function (phase) { phase.hidden = filter !== "all" && phase.dataset.stage !== filter; });
-        });
-      });
-
-      var catalogSearch = document.getElementById("catalogSearch");
-      var priorityFilter = document.getElementById("priorityFilter");
-      var focusFilter = document.getElementById("focusFilter");
-      var catalogCards = Array.prototype.slice.call(document.querySelectorAll(".catalog-card"));
-      var catalogCount = document.getElementById("catalogCount");
-      var catalogEmpty = document.getElementById("catalogEmpty");
-      function filterCatalog() {
-        var query = catalogSearch.value.trim().toLowerCase();
-        var priority = priorityFilter.value;
-        var focus = focusFilter.value;
-        var visible = 0;
-        catalogCards.forEach(function (card) {
-          var text = card.textContent.toLowerCase();
-          var priorityMatch = priority === "all" || card.dataset.priority === priority;
-          var focusMatch = focus === "all" || (card.dataset.focus || "").split(" ").indexOf(focus) >= 0;
-          var queryMatch = !query || text.indexOf(query) >= 0;
-          card.hidden = !(priorityMatch && focusMatch && queryMatch);
-          if (!card.hidden) visible += 1;
-        });
-        catalogCount.textContent = "Showing " + visible + " of " + catalogCards.length + " options";
-        catalogEmpty.hidden = visible !== 0;
-      }
-      [catalogSearch, priorityFilter, focusFilter].forEach(function (control) { control.addEventListener("input", filterCatalog); });
-      filterCatalog();
-
-      var planFields = Array.prototype.slice.call(document.querySelectorAll("[data-plan]"));
-      var saveStatus = document.getElementById("saveStatus");
-      var savedPlan = {};
-      try { savedPlan = JSON.parse(localStorage.getItem(PLAN_KEY) || "{}"); } catch (error) { savedPlan = {}; }
-      planFields.forEach(function (field) {
-        if (Object.prototype.hasOwnProperty.call(savedPlan, field.id)) field.value = savedPlan[field.id];
-        field.addEventListener(field.tagName === "TEXTAREA" ? "input" : "change", function () {
-          savedPlan[field.id] = field.value;
-          try { localStorage.setItem(PLAN_KEY, JSON.stringify(savedPlan)); } catch (error) {}
-          if (field.tagName === "TEXTAREA") saveStatus.textContent = "Impact notes saved locally.";
-        });
-      });
-      document.getElementById("savePlan").addEventListener("click", function () {
-        planFields.forEach(function (field) { savedPlan[field.id] = field.value; });
-        try { localStorage.setItem(PLAN_KEY, JSON.stringify(savedPlan)); } catch (error) {}
-        saveStatus.textContent = "Plan saved on this device.";
-        window.setTimeout(function () { saveStatus.textContent = ""; }, 2400);
-      });
-
-      function summaryText() {
-        var done = tracked.filter(function (box) { return box.checked; }).length;
-        var first = tracked.find(function (box) { return !box.checked; });
-        var target = document.getElementById("targetRole").value;
-        var track = document.getElementById("mainTrack").value;
-        return [
-          "Joshua's Career Path progress",
-          done + "/" + tracked.length + " milestones complete",
-          "Target role: " + target,
-          "Main study track: " + track,
-          "Next action: " + (first ? first.dataset.action : "Review the next career move.")
-        ].join("\n");
-      }
-      document.getElementById("copySummary").addEventListener("click", function () {
-        var text = summaryText();
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(function () {
-            document.getElementById("copySummary").textContent = "Copied";
-            window.setTimeout(function () { document.getElementById("copySummary").textContent = "Copy progress summary"; }, 1800);
-          });
-        } else {
-          var area = document.createElement("textarea");
-          area.value = text;
-          document.body.appendChild(area);
-          area.select();
-          document.execCommand("copy");
-          area.remove();
         }
-      });
-
-      document.getElementById("exportPlan").addEventListener("click", function () {
-        var backup = {
-          exportedAt: new Date().toISOString(),
-          checks: state.checks,
-          scope: scopeState,
-          plan: savedPlan,
-          summary: summaryText()
-        };
-        var blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-        var url = URL.createObjectURL(blob);
-        var link = document.createElement("a");
-        link.href = url;
-        link.download = "Joshua_Career_Roadmap_Backup.json";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
-        saveStatus.textContent = "Backup exported.";
-      });
-      document.getElementById("printButton").addEventListener("click", function () { window.print(); });
-
-      var themeOrder = ["system", "light", "dark"];
-      var themeNames = { system: "Theme: auto", light: "Theme: light", dark: "Theme: dark" };
-      var themeButtons = Array.prototype.slice.call(document.querySelectorAll(".theme-toggle"));
-      function currentTheme() { return document.documentElement.dataset.theme || "system"; }
-      function setTheme(theme) {
-        document.documentElement.dataset.theme = theme;
-        try { localStorage.setItem("jcr-theme", theme); } catch (error) {}
-        themeButtons.forEach(function (button) {
-          button.textContent = button.hasAttribute("data-compact") ? "◐" : themeNames[theme];
-          button.setAttribute("aria-label", themeNames[theme] + ". Activate to change.");
-          button.title = themeNames[theme];
-        });
-      }
-      function cycleTheme() {
-        var next = themeOrder[(themeOrder.indexOf(currentTheme()) + 1) % themeOrder.length];
-        if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-          document.startViewTransition(function () { setTheme(next); });
-        } else {
-          setTheme(next);
-        }
-      }
-      themeButtons.forEach(function (button) { button.addEventListener("click", cycleTheme); });
-      setTheme(currentTheme());
-
-      var menuButton = document.getElementById("menuButton");
-      var drawer = document.getElementById("mobileDrawer");
-      var closeMenu = document.getElementById("closeMenu");
-      function setMenu(open) {
-        drawer.classList.toggle("open", open);
-        drawer.setAttribute("aria-hidden", String(!open));
-        menuButton.setAttribute("aria-expanded", String(open));
-        document.body.classList.toggle("no-scroll", open);
-        if (open) closeMenu.focus(); else menuButton.focus();
-      }
-      menuButton.addEventListener("click", function () { setMenu(true); });
-      closeMenu.addEventListener("click", function () { setMenu(false); });
-      drawer.querySelectorAll("a").forEach(function (link) { link.addEventListener("click", function () { setMenu(false); }); });
-
-      var vendorPanel = document.getElementById("vendorPanel");
-      var vendorBackdrop = document.getElementById("vendorBackdrop");
-      var closeVendor = document.getElementById("closeVendor");
-      var vendorOpeners = Array.prototype.slice.call(document.querySelectorAll(".vendor-open"));
-      var vendorSearch = document.getElementById("vendorSearch");
-      var vendorCards = Array.prototype.slice.call(document.querySelectorAll(".vendor-card"));
-      var vendorEmpty = document.getElementById("vendorEmpty");
-      var lastVendorOpener = null;
-      function setVendorPanel(open, opener) {
-        if (open && drawer.classList.contains("open")) {
-          drawer.classList.remove("open");
-          drawer.setAttribute("aria-hidden", "true");
-          menuButton.setAttribute("aria-expanded", "false");
-        }
-        if (opener) lastVendorOpener = opener;
-        vendorPanel.classList.toggle("open", open);
-        vendorBackdrop.classList.toggle("open", open);
-        vendorPanel.setAttribute("aria-hidden", String(!open));
-        document.body.classList.toggle("no-scroll", open);
-        if (open) {
-          window.setTimeout(function () { vendorSearch.focus(); }, 80);
-        } else if (lastVendorOpener) {
-          lastVendorOpener.focus();
-        }
-      }
-      vendorOpeners.forEach(function (button) {
-        button.addEventListener("click", function () { setVendorPanel(true, button); });
-      });
-      closeVendor.addEventListener("click", function () { setVendorPanel(false); });
-      vendorBackdrop.addEventListener("click", function () { setVendorPanel(false); });
-      vendorSearch.addEventListener("input", function () {
-        var query = vendorSearch.value.trim().toLowerCase();
-        var visible = 0;
-        vendorCards.forEach(function (card) {
-          var match = !query || card.dataset.vendor.indexOf(query) >= 0 || card.textContent.toLowerCase().indexOf(query) >= 0;
-          card.hidden = !match;
-          if (match) visible += 1;
-        });
-        vendorEmpty.hidden = visible !== 0;
-      });
-      document.addEventListener("keydown", function (event) {
-        if (event.key === "Escape" && vendorPanel.classList.contains("open")) {
-          setVendorPanel(false);
-          return;
-        }
-        if (event.key === "Escape" && drawer.classList.contains("open")) setMenu(false);
-        if (event.key === "Tab" && vendorPanel.classList.contains("open")) {
-          var focusable = Array.prototype.slice.call(vendorPanel.querySelectorAll("button, input, a[href]")).filter(function (element) { return !element.hidden && element.offsetParent !== null; });
-          if (!focusable.length) return;
-          var first = focusable[0];
-          var last = focusable[focusable.length - 1];
-          if (event.shiftKey && document.activeElement === first) {
+        function trapTab(container, event) {
+          var items = focusableIn(container);
+          if (!items.length) return;
+          var first = items[0];
+          var last = items[items.length - 1];
+          if (event.shiftKey && (document.activeElement === first || !container.contains(document.activeElement))) {
             event.preventDefault();
             last.focus();
           } else if (!event.shiftKey && document.activeElement === last) {
@@ -1874,32 +1811,420 @@
             first.focus();
           }
         }
-      });
-
-      var navLinks = Array.prototype.slice.call(document.querySelectorAll(".side-nav a"));
-      var sections = Array.prototype.slice.call(document.querySelectorAll("[data-nav-section]"));
-      if ("IntersectionObserver" in window) {
-        var sectionObserver = new IntersectionObserver(function (entries) {
-          entries.forEach(function (entry) {
-            if (!entry.isIntersecting) return;
-            navLinks.forEach(function (link) { link.classList.toggle("active", link.getAttribute("href") === "#" + entry.target.id); });
+        // Focusing an element in the same tick it stops being `visibility: hidden`
+        // silently fails in several engines, so this waits for paint. Only one
+        // deferred focus may be pending, otherwise closing one overlay and
+        // opening another in quick succession lets the stale one steal focus back.
+        var pendingFocus = null;
+        function focusSoon(element) {
+          if (pendingFocus !== null) {
+            window.cancelAnimationFrame(pendingFocus);
+            pendingFocus = null;
+          }
+          if (!element) return;
+          pendingFocus = window.requestAnimationFrame(function () {
+            pendingFocus = window.requestAnimationFrame(function () {
+              pendingFocus = null;
+              try { element.focus(); } catch (error) {}
+            });
           });
-        }, { rootMargin: "-22% 0px -66% 0px", threshold: 0 });
-        sections.forEach(function (section) { sectionObserver.observe(section); });
+        }
 
-        var revealObserver = new IntersectionObserver(function (entries) {
-          entries.forEach(function (entry) {
-            if (!entry.isIntersecting) return;
-            entry.target.classList.add("visible");
-            revealObserver.unobserve(entry.target);
+        // ------------------------------------------------------- status messaging
+
+        var saveStatus = document.getElementById("saveStatus");
+        var statusTimer = null;
+        function setStatus(message, holdMs) {
+          if (!saveStatus) return;
+          saveStatus.textContent = message;
+          window.clearTimeout(statusTimer);
+          if (message && holdMs) {
+            statusTimer = window.setTimeout(function () { saveStatus.textContent = ""; }, holdMs);
+          }
+        }
+
+        // ---------------------------------------------------------- progress ring
+
+        var tracked = Array.prototype.slice.call(document.querySelectorAll("[data-track]"));
+        var mainFill = document.getElementById("mainProgressFill");
+        var sideFill = document.getElementById("sideProgressFill");
+        var progressRing = document.getElementById("progressRing");
+        var ringPercent = document.getElementById("ringPercent");
+        var sidePercent = document.getElementById("sidePercent");
+        var progressText = document.getElementById("progressText");
+        var nextAction = document.getElementById("nextAction");
+
+        function updateProgress() {
+          var done = tracked.filter(function (box) { return box.checked; }).length;
+          var total = tracked.length;
+          var percent = total ? Math.round(done / total * 100) : 0;
+          if (mainFill) mainFill.style.width = percent + "%";
+          if (sideFill) sideFill.style.width = percent + "%";
+          if (progressRing) progressRing.style.setProperty("--p", percent);
+          if (ringPercent) ringPercent.textContent = percent + "%";
+          if (sidePercent) sidePercent.textContent = percent + "%";
+          if (progressText) progressText.textContent = done + " of " + total + " milestones complete";
+          var next = tracked.filter(function (box) { return !box.checked; })[0];
+          if (nextAction) {
+            nextAction.textContent = next
+              ? (next.dataset.action || "Complete the next unchecked milestone.")
+              : "Roadmap complete. Review your target role and set a new evidence goal.";
+          }
+        }
+        tracked.forEach(function (box) {
+          box.checked = Boolean(state.checks[box.id]);
+          box.addEventListener("change", function () {
+            state.checks[box.id] = box.checked;
+            writeObject(STORAGE_KEY, state);
+            updateProgress();
           });
-        }, { threshold: .06 });
-        document.querySelectorAll(".reveal").forEach(function (element, index) {
-          element.style.transitionDelay = Math.min(index % 5, 4) * 70 + "ms";
-          revealObserver.observe(element);
         });
-      } else {
-        document.querySelectorAll(".reveal").forEach(function (element) { element.classList.add("visible"); });
+        updateProgress();
+
+        var resetChecks = document.getElementById("resetChecks");
+        if (resetChecks) {
+          resetChecks.addEventListener("click", function () {
+            if (!window.confirm("Clear all checked roadmap, skill, lab, and weekly milestones?")) return;
+            tracked.forEach(function (box) { box.checked = false; });
+            state.checks = {};
+            writeObject(STORAGE_KEY, state);
+            updateProgress();
+          });
+        }
+
+        // ------------------------------------------------------------ scope score
+
+        var scopeChecks = Array.prototype.slice.call(document.querySelectorAll(".scope-check"));
+        var scopeScore = document.getElementById("scopeScore");
+        var scopeMessage = document.getElementById("scopeMessage");
+        function updateScope() {
+          var count = scopeChecks.filter(function (box) { return box.checked; }).length;
+          if (scopeScore) scopeScore.textContent = count + "/" + scopeChecks.length;
+          if (!scopeMessage) return;
+          scopeMessage.textContent = count >= 6
+            ? "Excellent bridge. Prioritize measurable ownership and ask for Azure, identity, hardening, or automation work."
+            : count >= 4
+              ? "Credible bridge. Strengthen missing exposure—especially cloud, identity, logging, and automation."
+              : "The title alone is not enough. Clarify the real responsibilities and growth path before relying on the role.";
+        }
+        scopeChecks.forEach(function (box) {
+          box.checked = Boolean(scopeState[box.value]);
+          box.addEventListener("change", function () {
+            scopeState[box.value] = box.checked;
+            writeObject(SCOPE_KEY, scopeState);
+            updateScope();
+          });
+        });
+        updateScope();
+
+        // ----------------------------------------------------------- stage filter
+
+        var stageButtons = Array.prototype.slice.call(document.querySelectorAll("[data-stage-filter]"));
+        var phases = Array.prototype.slice.call(document.querySelectorAll(".roadmap-phase"));
+        stageButtons.forEach(function (button) {
+          button.addEventListener("click", function () {
+            var filter = button.dataset.stageFilter;
+            stageButtons.forEach(function (item) {
+              var active = item === button;
+              item.classList.toggle("active", active);
+              item.setAttribute("aria-pressed", String(active));
+            });
+            phases.forEach(function (phase) {
+              phase.hidden = filter !== "all" && phase.dataset.stage !== filter;
+              // A phase hidden before it ever intersected would come back at
+              // opacity 0 and stay invisible until the next scroll.
+              if (!phase.hidden) phase.classList.add("visible");
+            });
+          });
+        });
+
+        // --------------------------------------------------------- catalog filter
+
+        var catalogSearch = document.getElementById("catalogSearch");
+        var priorityFilter = document.getElementById("priorityFilter");
+        var focusFilter = document.getElementById("focusFilter");
+        var catalogCards = Array.prototype.slice.call(document.querySelectorAll(".catalog-card"));
+        var catalogCount = document.getElementById("catalogCount");
+        var catalogEmpty = document.getElementById("catalogEmpty");
+        function filterCatalog() {
+          var query = catalogSearch ? catalogSearch.value.trim().toLowerCase() : "";
+          var priority = priorityFilter ? priorityFilter.value : "all";
+          var focus = focusFilter ? focusFilter.value : "all";
+          var visible = 0;
+          catalogCards.forEach(function (card) {
+            var text = card.textContent.toLowerCase();
+            var priorityMatch = priority === "all" || card.dataset.priority === priority;
+            var focusMatch = focus === "all" || (card.dataset.focus || "").split(" ").indexOf(focus) >= 0;
+            var queryMatch = !query || text.indexOf(query) >= 0;
+            card.hidden = !(priorityMatch && focusMatch && queryMatch);
+            if (!card.hidden) visible += 1;
+          });
+          if (catalogCount) catalogCount.textContent = "Showing " + visible + " of " + catalogCards.length + " options";
+          if (catalogEmpty) catalogEmpty.hidden = visible !== 0;
+        }
+        [catalogSearch, priorityFilter, focusFilter].forEach(function (control) {
+          if (!control) return;
+          control.addEventListener("input", filterCatalog);
+          control.addEventListener("change", filterCatalog); // some engines skip `input` on <select>
+        });
+        filterCatalog();
+
+        // ----------------------------------------------------------- weekly plan
+
+        var planFields = Array.prototype.slice.call(document.querySelectorAll("[data-plan]"));
+        planFields.forEach(function (field) {
+          if (Object.prototype.hasOwnProperty.call(savedPlan, field.id)) field.value = savedPlan[field.id];
+          var eventName = field.tagName === "TEXTAREA" || field.type === "text" || field.type === "number" ? "input" : "change";
+          field.addEventListener(eventName, function () {
+            savedPlan[field.id] = field.value;
+            writeObject(PLAN_KEY, savedPlan);
+            if (field.tagName === "TEXTAREA") setStatus("Impact notes saved locally.", 2400);
+          });
+        });
+        var savePlan = document.getElementById("savePlan");
+        if (savePlan) {
+          savePlan.addEventListener("click", function () {
+            planFields.forEach(function (field) { savedPlan[field.id] = field.value; });
+            setStatus(writeObject(PLAN_KEY, savedPlan)
+              ? "Plan saved on this device."
+              : "Could not save — private browsing or storage is full.", 2400);
+          });
+        }
+
+        // -------------------------------------------------------- copy and export
+
+        function summaryText() {
+          var done = tracked.filter(function (box) { return box.checked; }).length;
+          var first = tracked.filter(function (box) { return !box.checked; })[0];
+          var targetRole = document.getElementById("targetRole");
+          var mainTrack = document.getElementById("mainTrack");
+          return [
+            "Joshua's Career Path progress",
+            done + "/" + tracked.length + " milestones complete",
+            "Target role: " + (targetRole ? targetRole.value : "—"),
+            "Main study track: " + (mainTrack ? mainTrack.value : "—"),
+            "Next action: " + (first ? (first.dataset.action || "Continue the roadmap.") : "Review the next career move.")
+          ].join("\n");
+        }
+
+        // execCommand fallback: iOS ignores select() on a plain textarea, and an
+        // on-screen textarea scrolls the page, so it is positioned off-canvas and
+        // selected by range.
+        function legacyCopy(text) {
+          var area = document.createElement("textarea");
+          area.value = text;
+          area.setAttribute("readonly", "");
+          area.style.cssText = "position:fixed;top:0;left:-9999px;opacity:0;";
+          document.body.appendChild(area);
+          var copied = false;
+          try {
+            area.contentEditable = "true";
+            area.select();
+            area.setSelectionRange(0, text.length);
+            copied = document.execCommand("copy");
+          } catch (error) {
+            copied = false;
+          }
+          area.remove();
+          return copied;
+        }
+
+        var copySummary = document.getElementById("copySummary");
+        if (copySummary) {
+          var copyLabel = copySummary.textContent;
+          var copyTimer = null;
+          function reportCopy(ok) {
+            copySummary.textContent = ok ? "Copied" : "Press Ctrl/Cmd+C";
+            window.clearTimeout(copyTimer);
+            copyTimer = window.setTimeout(function () { copySummary.textContent = copyLabel; }, 1800);
+          }
+          copySummary.addEventListener("click", function () {
+            var text = summaryText();
+            // navigator.clipboard exists but rejects on file:// and plain http.
+            // The unhandled rejection used to leave the button silently dead.
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function () {
+                reportCopy(true);
+              })["catch"](function () {
+                reportCopy(legacyCopy(text));
+              });
+            } else {
+              reportCopy(legacyCopy(text));
+            }
+          });
+        }
+
+        var exportPlan = document.getElementById("exportPlan");
+        if (exportPlan) {
+          exportPlan.addEventListener("click", function () {
+            var backup = {
+              exportedAt: new Date().toISOString(),
+              checks: state.checks,
+              scope: scopeState,
+              plan: savedPlan,
+              summary: summaryText()
+            };
+            var blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement("a");
+            link.href = url;
+            link.download = "Joshua_Career_Roadmap_Backup.json";
+            link.rel = "noopener";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            // Revoking in the same tick cancels the download in Firefox and Safari.
+            window.setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+            setStatus("Backup exported.", 2400);
+          });
+        }
+
+        var printButton = document.getElementById("printButton");
+        if (printButton) printButton.addEventListener("click", function () { window.print(); });
+
+        // ----------------------------------------------------------------- theme
+
+        var themeOrder = ["system", "light", "dark"];
+        var themeNames = { system: "Theme: auto", light: "Theme: light", dark: "Theme: dark" };
+        var themeButtons = Array.prototype.slice.call(document.querySelectorAll(".theme-toggle"));
+        function currentTheme() {
+          var theme = root.dataset.theme;
+          return themeOrder.indexOf(theme) >= 0 ? theme : "system";
+        }
+        function setTheme(theme) {
+          if (themeOrder.indexOf(theme) < 0) theme = "system";
+          root.dataset.theme = theme;
+          try { localStorage.setItem(THEME_KEY, theme); } catch (error) {}
+          themeButtons.forEach(function (button) {
+            button.textContent = button.hasAttribute("data-compact") ? "◐" : themeNames[theme];
+            button.setAttribute("aria-label", themeNames[theme] + ". Activate to change.");
+            button.title = themeNames[theme];
+          });
+        }
+        function cycleTheme() {
+          var next = themeOrder[(themeOrder.indexOf(currentTheme()) + 1) % themeOrder.length];
+          if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            document.startViewTransition(function () { setTheme(next); });
+          } else {
+            setTheme(next);
+          }
+        }
+        themeButtons.forEach(function (button) { button.addEventListener("click", cycleTheme); });
+        setTheme(currentTheme());
+
+        // ---------------------------------------------------------- mobile drawer
+
+        var menuButton = document.getElementById("menuButton");
+        var drawer = document.getElementById("mobileDrawer");
+        var closeMenu = document.getElementById("closeMenu");
+
+        function drawerOpen() { return Boolean(drawer && drawer.classList.contains("open")); }
+        function setMenu(open, restoreFocus) {
+          if (!drawer) return;
+          drawer.classList.toggle("open", open);
+          drawer.setAttribute("aria-hidden", String(!open));
+          if (menuButton) menuButton.setAttribute("aria-expanded", String(open));
+          setScrollLock("drawer", open);
+          if (open) focusSoon(closeMenu);
+          else if (restoreFocus !== false) focusSoon(menuButton);
+        }
+        if (menuButton) menuButton.addEventListener("click", function () { setMenu(true); });
+        if (closeMenu) closeMenu.addEventListener("click", function () { setMenu(false); });
+        if (drawer) {
+          Array.prototype.slice.call(drawer.querySelectorAll("a[href]")).forEach(function (link) {
+            // Let the anchor navigate, then release the lock so the browser can
+            // actually scroll to the target.
+            link.addEventListener("click", function () { setMenu(false, false); });
+          });
+        }
+
+        // ----------------------------------------------------------- vendor panel
+
+        var vendorPanel = document.getElementById("vendorPanel");
+        var vendorBackdrop = document.getElementById("vendorBackdrop");
+        var closeVendor = document.getElementById("closeVendor");
+        var vendorOpeners = Array.prototype.slice.call(document.querySelectorAll(".vendor-open"));
+        var vendorSearch = document.getElementById("vendorSearch");
+        var vendorCards = Array.prototype.slice.call(document.querySelectorAll(".vendor-card"));
+        var vendorEmpty = document.getElementById("vendorEmpty");
+        var lastVendorOpener = null;
+
+        function vendorOpen() { return Boolean(vendorPanel && vendorPanel.classList.contains("open")); }
+        function setVendorPanel(open, opener) {
+          if (!vendorPanel) return;
+          if (open && drawerOpen()) setMenu(false, false);
+          if (opener) lastVendorOpener = opener;
+          vendorPanel.classList.toggle("open", open);
+          if (vendorBackdrop) vendorBackdrop.classList.toggle("open", open);
+          vendorPanel.setAttribute("aria-hidden", String(!open));
+          setScrollLock("vendor", open);
+          if (open) {
+            // Focus the close button, not the search field: auto-raising the
+            // software keyboard on phones hides most of the panel.
+            focusSoon(closeVendor);
+          } else {
+            focusSoon(lastVendorOpener);
+            lastVendorOpener = null;
+          }
+        }
+        vendorOpeners.forEach(function (button) {
+          button.addEventListener("click", function () { setVendorPanel(true, button); });
+        });
+        if (closeVendor) closeVendor.addEventListener("click", function () { setVendorPanel(false); });
+        if (vendorBackdrop) vendorBackdrop.addEventListener("click", function () { setVendorPanel(false); });
+        if (vendorSearch) {
+          vendorSearch.addEventListener("input", function () {
+            var query = vendorSearch.value.trim().toLowerCase();
+            var visible = 0;
+            vendorCards.forEach(function (card) {
+              var haystack = (card.dataset.vendor || "") + " " + card.textContent.toLowerCase();
+              var match = !query || haystack.indexOf(query) >= 0;
+              card.hidden = !match;
+              if (match) visible += 1;
+            });
+            if (vendorEmpty) vendorEmpty.hidden = visible !== 0;
+          });
+        }
+
+        document.addEventListener("keydown", function (event) {
+          if (event.key === "Escape") {
+            if (vendorOpen()) { setVendorPanel(false); return; }
+            if (drawerOpen()) { setMenu(false); return; }
+          }
+          if (event.key !== "Tab") return;
+          if (vendorOpen()) trapTab(vendorPanel, event);
+          else if (drawerOpen()) trapTab(drawer, event);
+        });
+
+        // -------------------------------------------------------------- observers
+
+        var navLinks = Array.prototype.slice.call(document.querySelectorAll(".side-nav a"));
+        var sections = Array.prototype.slice.call(document.querySelectorAll("[data-nav-section]"));
+        if ("IntersectionObserver" in window) {
+          var sectionObserver = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (!entry.isIntersecting) return;
+              navLinks.forEach(function (link) {
+                link.classList.toggle("active", link.getAttribute("href") === "#" + entry.target.id);
+              });
+            });
+          }, { rootMargin: "-22% 0px -66% 0px", threshold: 0 });
+          sections.forEach(function (section) { sectionObserver.observe(section); });
+
+          var revealObserver = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (!entry.isIntersecting) return;
+              entry.target.classList.add("visible");
+              revealObserver.unobserve(entry.target);
+            });
+          }, { threshold: .06 });
+          Array.prototype.slice.call(document.querySelectorAll(".reveal")).forEach(function (element, index) {
+            element.style.transitionDelay = Math.min(index % 5, 4) * 70 + "ms";
+            revealObserver.observe(element);
+          });
+        } else {
+          revealEverything();
+        }
       }
     }());
   </script>
